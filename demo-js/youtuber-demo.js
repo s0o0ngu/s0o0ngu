@@ -54,11 +54,11 @@ app.use(express.json()) // http 외 모듈인 '미들웨어' : json 설정
 app.post('/youtubers', (req, res) => {
     console.log(req.body)
 
-//등록...? Map(db)에 저장(put) 해주셔야 해요
-db.set(id++, req.body)
+    //등록...? Map(db)에 저장(put) 해주셔야 해요
+    db.set(id++, req.body)
 
-res.json({
-    message : `${db.get(id-1).channelTitle}님, 유튜버 생활을 응원합니다!`
+    res.json({
+        message : `${db.get(id-1).channelTitle}님, 유튜버 생활을 응원합니다!`
     })
 })
 
@@ -66,12 +66,13 @@ app.delete('/youtubers/:id', function(req, res) {
     let {id} = req.params
     id = parseInt(id)
 
-    if (db.get(id) == undefined) {
+    var youtuber = db.get(id)
+    if (youtuber == undefined) {
         res.json({
             message : `요청하신 ${id}번은 없는 유튜버입니다.`
         })
     } else {
-        const channelTitle = db.get(id).channelTitle
+        const channelTitle = youtuber.channelTitle
         db.delete(id)
     
         res.json({
@@ -96,8 +97,24 @@ app.delete('/youtubers', function(req, res) {
     })
 })
 
-app.put('/youtubers/:id', function(req, res){
-    res.json({
-        message : "channelTitle님, 채널명이 channelTitle로 수정되었습니다."
-    })
+app.put('/youtubers/:id', function(req, res) {
+    let {id} = req.params
+    id = parseInt(id)
+
+    var youtuber = db.get(id)
+    var oldTitle = youtuber.channelTitle
+    if (youtuber == undefined) {
+        res.json({
+            message : `요청하신 ${id}번은 없는 유튜버입니다.`
+        })
+    } else {
+        var newTitle = req.body.channelTitle
+
+        youtuber.channelTitle = newTitle
+        db.set(id, youtuber)
+
+        res.json({
+            message : `${oldTitle}님, 채널명이 ${newTItle}로 수정되었습니다.`
+        })
+    }
 })
